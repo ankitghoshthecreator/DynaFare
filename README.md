@@ -1,4 +1,4 @@
-— Real-Time Dynamic Pricing & ETA Platform
+# DynaFare — Real-Time Dynamic Pricing & ETA Platform
 
 > A ride-hailing / delivery-style backend that computes live price and ETA predictions using an XGBoost model, streams demand/supply signals in real time via Kafka, and serves everything through a horizontally scaled, containerized, Kubernetes-deployed architecture.
 
@@ -463,5 +463,5 @@ cd ml-service && pytest
 - Multi-region deployment for latency-sensitive markets.
 - A/B testing framework for comparing pricing strategies (Strategy pattern already makes this straightforward to wire up).
 - Driver-side ETA model improvements using real GPS trace data instead of haversine-distance approximations.
- 
- 
+
+
