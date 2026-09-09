@@ -1,0 +1,13 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Java
+target/
+*.class
+
+# IDEs
+.idea/
+.vscode/
+*.swp

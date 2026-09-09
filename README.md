@@ -465,3 +465,20 @@ cd ml-service && pytest
 - Driver-side ETA model improvements using real GPS trace data instead of haversine-distance approximations.
 
 
+
+---
+
+## 16. 10-Part Development Plan
+
+To execute the project in manageable phases, development is structured into the following 10 parts:
+
+1. **Part 1: Foundation & Boilerplate** - Project structure, dependencies (Java/Python), venv setup, and initial CI/CD scaffolding.
+2. **Part 2: Database Layer & Entities** - PostgreSQL schema creation, Flyway migrations, and Spring Data JPA entities.
+3. **Part 3: Core REST API & Security** - Spring Boot controllers, JWT Authentication, and basic user/booking CRUD endpoints.
+4. **Part 4: Kafka Event Streaming** - Setting up Kafka topics, producers for location/demand events, and base consumers.
+5. **Part 5: ML Data Pipeline** - Python feature engineering, historical data prep, and Redis integration for fast lookups.
+6. **Part 6: XGBoost Pricing Model** - Training script, hyperparameter tuning, and model export to JSON/UBJ.
+7. **Part 7: ML Inference Service** - FastAPI application serving the XGBoost model and exposing MCP tools.
+8. **Part 8: Pricing Integration & Fallbacks** - Spring Boot calling the Python ML service, implementing the circuit breaker and Flat-Rate fallback.
+9. **Part 9: WebSocket Real-time Push** - Spring Boot WebSocket (STOMP) integration to push live price updates to clients via Nginx.
+10. **Part 10: Containerization & Kubernetes** - Dockerizing all services, writing k8s manifests, and final end-to-end testing.
