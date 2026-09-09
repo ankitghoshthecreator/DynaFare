@@ -1,4 +1,4 @@
-# SurgeSense — Real-Time Dynamic Pricing & ETA Platform
+— Real-Time Dynamic Pricing & ETA Platform
 
 > A ride-hailing / delivery-style backend that computes live price and ETA predictions using an XGBoost model, streams demand/supply signals in real time via Kafka, and serves everything through a horizontally scaled, containerized, Kubernetes-deployed architecture.
 
@@ -116,7 +116,7 @@ A thin web or mobile client. It does three things: calls REST endpoints for book
 **Why Nginx over alternatives:** it's free, well documented, and doubles as both LB and static asset server if we ever add a marketing page. In Kubernetes we actually run it as the backing engine for an **Ingress resource**, so app teams don't hand-edit `nginx.conf` — they edit Ingress YAML and the Nginx Ingress Controller regenerates config underneath.
 
 **⚠️ Fallback — if Nginx integration gets stuck:**
-- If path-based WebSocket proxying misbehaves (a known source of pain — sticky timeouts, dropped upgrades under certain Nginx versions), fall back to running the WebSocket endpoint on its **own subdomain** (`ws.surgesense.io`) with a dedicated, simpler `server` block, rather than fighting a single shared config.
+- If path-based WebSocket proxying misbehaves (a known source of pain — sticky timeouts, dropped upgrades under certain Nginx versions), fall back to running the WebSocket endpoint on its **own subdomain** (`ws.dynafare.io`) with a dedicated, simpler `server` block, rather than fighting a single shared config.
 - If we outgrow single-node Nginx's config-reload model (frequent redeploys causing brief connection drops), migrate to a cloud-native load balancer (AWS ALB / GCP Load Balancer) for L7 routing and keep Nginx only as the Ingress controller inside the cluster, or drop it in favor of **Traefik**, which handles dynamic backend registration more gracefully in Kubernetes.
 - If rate limiting at the Nginx layer proves too coarse (can't distinguish authenticated users), move rate limiting into the Spring Boot gateway filter chain (bucket4j) and leave Nginx doing only IP-level abuse protection.
 
@@ -126,7 +126,7 @@ A thin web or mobile client. It does three things: calls REST endpoints for book
 
 **Package structure (layered, OOP-first):**
 ```
-com.surgesense.api
+com.dynafare.api
 ├── controller     (REST controllers — thin, no business logic)
 ├── service        (business logic, interfaces + impls)
 ├── repository      (Spring Data JPA repositories)
@@ -249,7 +249,7 @@ All images run as a non-root user, expose only the port they need, and have a `H
 
 **Resources per service:** a `Deployment` (replica count, rolling update strategy), a `Service` (ClusterIP, internal routing), a `HorizontalPodAutoscaler` (scale on CPU/memory, e.g. 2–10 replicas), and `ConfigMap`/`Secret` for environment config and credentials. Nginx runs as an `Ingress` (via the Nginx Ingress Controller) rather than a hand-managed Deployment where possible, so routing rules live in versioned YAML.
 
-**Namespaces:** `surgesense-dev`, `surgesense-staging`, `surgesense-prod` — same manifests, different values via Kustomize overlays or Helm value files, so "it worked in staging" actually means something.
+**Namespaces:** `dynafare-dev`, `dynafare-staging`, `dynafare-prod` — same manifests, different values via Kustomize overlays or Helm value files, so "it worked in staging" actually means something.
 
 **⚠️ Fallback — if managing a full Kubernetes cluster is more than the project needs:**
 - For local development or a portfolio demo, **Docker Compose** stands in for the whole stack (all services + Postgres + Redis + Kafka + Nginx) with one command. Kubernetes manifests are kept for the "production-shaped" deployment story, but nobody should need a cluster just to run the project locally.
@@ -373,7 +373,7 @@ The pattern across all of these: **every fallback degrades gracefully rather tha
 ## 10. Repository structure
 
 ```
-surgesense/
+dynafare/
 ├── api-service/            (Spring Boot)
 │   ├── src/main/java/...
 │   ├── src/test/java/...
@@ -413,8 +413,8 @@ surgesense/
 
 ```bash
 # clone
-git clone https://github.com/<you>/surgesense.git
-cd surgesense
+git clone https://github.com/<you>/dynafare.git
+cd dynafare
 
 # spin up the full stack (Postgres, Redis, Kafka, both services, Nginx)
 docker compose -f infra/docker-compose.yml up --build
@@ -447,10 +447,10 @@ cd ml-service && pytest
 ## 14. Deployment runbook
 
 1. Merge to `main` triggers the CI/CD pipeline (build, test, image push).
-2. Pipeline deploys to `surgesense-staging` automatically.
+2. Pipeline deploys to `dynafare-staging` automatically.
 3. Smoke-test staging (a scripted health check + one end-to-end quote request).
 4. Manual approval gate in GitHub Actions.
-5. Pipeline deploys to `surgesense-prod` via rolling update (zero downtime — old pods stay up until new ones pass readiness probes).
+5. Pipeline deploys to `dynafare-prod` via rolling update (zero downtime — old pods stay up until new ones pass readiness probes).
 6. Post-deploy: watch Grafana dashboards (or logs, in the lightweight setup) for error-rate/latency anomalies for the first 15 minutes.
 7. Rollback path: `kubectl rollout undo deployment/<name>` or re-deploy the previous image tag — always keep the last 3 known-good tags available in the registry.
 
@@ -463,5 +463,5 @@ cd ml-service && pytest
 - Multi-region deployment for latency-sensitive markets.
 - A/B testing framework for comparing pricing strategies (Strategy pattern already makes this straightforward to wire up).
 - Driver-side ETA model improvements using real GPS trace data instead of haversine-distance approximations.
-#   D y n a F a r e  
+ 
  
