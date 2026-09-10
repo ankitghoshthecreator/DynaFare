@@ -1,0 +1,14 @@
+# Maven build artifacts
+target/
+
+# IDE / editor files
+.idea/
+.vscode/
+*.iml
+
+# OS artifacts
+.DS_Store
+
+# Local env overrides
+*.env
+.env

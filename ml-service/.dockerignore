@@ -1,0 +1,33 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# Testing and linting caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Local dev artifacts
+*.log
+*.egg-info/
+dist/
+build/
+
+# Model artifacts (loaded at runtime or from object storage)
+model/*.json
+model/*.ubj
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
