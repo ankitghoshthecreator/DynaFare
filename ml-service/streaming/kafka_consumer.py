@@ -3,20 +3,20 @@ Kafka consumer — Part 4.
 Consumes driver-location-events and demand-events; aggregates per zone into Redis.
 """
 
-import os
 import json
 import logging
+import os
 import threading
 from collections import defaultdict
 
-from kafka import KafkaConsumer
 import redis
+from kafka import KafkaConsumer
 
 logger = logging.getLogger(__name__)
 
 KAFKA_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
-REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 
 DEMAND_TOPIC = "demand-events"
 LOCATION_TOPIC = "driver-location-events"
@@ -101,7 +101,7 @@ def run_consumer():
             if flush_counter % 10 == 0:   # flush every 10 messages
                 _flush_to_redis(r)
 
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             logger.error("Error processing Kafka message: %s", exc)
 
 

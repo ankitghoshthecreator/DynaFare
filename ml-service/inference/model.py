@@ -3,10 +3,11 @@ XGBoost model loader and inference logic.
 The model artifact is loaded once at startup (singleton pattern).
 """
 
-import os
 import logging
-import xgboost as xgb
+import os
+
 import redis
+import xgboost as xgb
 
 from inference.features import build_features
 
@@ -16,7 +17,7 @@ logger = logging.getLogger(__name__)
 MODEL_PATH = os.getenv("MODEL_PATH", "model/price_model.json")
 ETA_MODEL_PATH = os.getenv("ETA_MODEL_PATH", "model/eta_model.json")
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
-REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 
 # ─── Singletons ──────────────────────────────────────────────────────────────
 _price_model: xgb.Booster | None = None
@@ -60,7 +61,7 @@ def _get_demand_ratio(zone_id: str | None) -> float:
         r = _get_redis()
         value = r.get(f"zone:{zone_id}:demand_ratio")
         return float(value) if value else 1.0
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         logger.warning("Redis read failed (%s) — using demand_ratio=1.0", exc)
         return 1.0
 

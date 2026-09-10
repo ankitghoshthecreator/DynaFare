@@ -1,12 +1,15 @@
 """Tests for ml-service — Part 13."""
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+from typing import ClassVar
+
 import pytest
-from inference.features import haversine_km, build_features, cyclic_encode
-import math
+
+from inference.features import build_features, cyclic_encode, haversine_km
 
 
 class TestHaversine:
@@ -35,7 +38,7 @@ class TestCyclicEncode:
 
 
 class TestBuildFeatures:
-    BASE_PAYLOAD = {
+    BASE_PAYLOAD: ClassVar[dict] = {
         "pickup_lat": 40.7128,
         "pickup_lon": -74.0060,
         "dropoff_lat": 40.7580,

@@ -3,9 +3,10 @@ MCP tool definitions — Part 7.
 Exposes get_price_prediction, get_live_demand, get_driver_eta as MCP tools.
 """
 
+import logging
+
 from fastapi import APIRouter
 from pydantic import BaseModel
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -54,19 +55,20 @@ async def get_live_demand(req: DemandRequest):
     MCP Tool: get_live_demand
     Returns current demand/supply ratio and active driver/rider counts for a zone.
     """
-    import redis as redis_lib
     import os
+
+    import redis as redis_lib
 
     r = redis_lib.Redis(
         host=os.getenv("REDIS_HOST", "localhost"),
-        port=int(os.getenv("REDIS_PORT", 6379)),
+        port=int(os.getenv("REDIS_PORT", "6379")),
         decode_responses=True,
     )
     try:
         demand_ratio = float(r.get(f"zone:{req.zone_id}:demand_ratio") or 1.0)
         active_drivers = int(r.get(f"zone:{req.zone_id}:active_drivers") or 0)
         pending_riders = int(r.get(f"zone:{req.zone_id}:pending_riders") or 0)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         logger.warning("Redis error in get_live_demand: %s", exc)
         demand_ratio, active_drivers, pending_riders = 1.0, 0, 0
 
@@ -85,20 +87,22 @@ async def get_driver_eta(req: DriverEtaRequest):
     Returns predicted arrival time for a driver to a destination.
     Stub implementation — real version uses the ETA model + live driver location.
     """
-    import redis as redis_lib
     import os
+
+    import redis as redis_lib
+
     from inference.features import haversine_km
 
     r = redis_lib.Redis(
         host=os.getenv("REDIS_HOST", "localhost"),
-        port=int(os.getenv("REDIS_PORT", 6379)),
+        port=int(os.getenv("REDIS_PORT", "6379")),
         decode_responses=True,
     )
     try:
         loc = r.hgetall(f"driver:{req.driver_id}:location")
         driver_lat = float(loc.get("lat", req.dest_lat))
         driver_lon = float(loc.get("lon", req.dest_lon))
-    except Exception:
+    except Exception:  # noqa: BLE001
         driver_lat, driver_lon = req.dest_lat, req.dest_lon
 
     distance_km = haversine_km(driver_lat, driver_lon, req.dest_lat, req.dest_lon)

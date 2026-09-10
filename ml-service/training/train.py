@@ -13,18 +13,17 @@ The script:
 """
 
 import argparse
+import json
 import logging
 import os
-import json
+import sys
 
 import pandas as pd
 import xgboost as xgb
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error
-from sklearn.model_selection import train_test_split
 
-import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from inference.features import build_features, FEATURE_COLUMNS
+from inference.features import FEATURE_COLUMNS, build_features
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s — %(message)s")
 logger = logging.getLogger(__name__)

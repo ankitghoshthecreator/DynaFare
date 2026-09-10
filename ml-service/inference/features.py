@@ -4,9 +4,9 @@ All feature transformations MUST be identical here to avoid train/serve skew.
 """
 
 import math
-import pandas as pd
-from datetime import datetime
+from datetime import datetime, timezone
 
+import pandas as pd
 
 # ─── Haversine distance ──────────────────────────────────────────────────────
 
@@ -42,7 +42,7 @@ def build_features(payload: dict, demand_ratio: float = 1.0) -> pd.DataFrame:
     Returns:
         Single-row DataFrame with all model features.
     """
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     ts_str = payload.get("timestamp")
     if ts_str:
         try:
