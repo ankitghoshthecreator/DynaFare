@@ -7,10 +7,11 @@ import json
 import logging
 import os
 import threading
+import time
 from collections import defaultdict
 
 import redis
-from kafka import KafkaConsumer
+from kafka import KafkaConsumer, KafkaProducer
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +21,7 @@ REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 
 DEMAND_TOPIC = "demand-events"
 LOCATION_TOPIC = "driver-location-events"
+PRICE_UPDATES_TOPIC = "price-updates"
 
 
 class ZoneAggregator:
@@ -61,15 +63,36 @@ class ZoneAggregator:
 _aggregator = ZoneAggregator()
 
 
-def _flush_to_redis(r: redis.Redis):
-    """Push the aggregated zone stats into Redis with a short TTL."""
+def _flush_to_redis(r: redis.Redis, producer: KafkaProducer, last_surge: dict):
+    """Push the aggregated zone stats into Redis and publish price updates if surge changes."""
     snapshot = _aggregator.snapshot()
     pipe = r.pipeline()
     for zone_id, stats in snapshot.items():
         pipe.setex(f"zone:{zone_id}:demand_ratio", 30, stats["demand_ratio"])
         pipe.setex(f"zone:{zone_id}:active_drivers", 30, stats["active_drivers"])
         pipe.setex(f"zone:{zone_id}:pending_riders", 30, stats["pending_riders"])
+        
+        # Calculate surge multiplier based on demand_ratio
+        # Simple logic: base 1.0, max 3.0
+        ratio = stats["demand_ratio"]
+        surge = min(3.0, max(1.0, 1.0 + (ratio - 1.0) * 0.5)) if ratio > 1.0 else 1.0
+        surge = round(surge, 2)
+        
+        # If surge changed by more than 0.1, publish an update
+        prev_surge = last_surge.get(zone_id, 1.0)
+        if abs(surge - prev_surge) >= 0.1:
+            logger.info("Surge changed for %s: %s -> %s", zone_id, prev_surge, surge)
+            last_surge[zone_id] = surge
+            update_event = {
+                "zoneId": zone_id,
+                "newSurgeMultiplier": surge,
+                "demandRatio": ratio,
+                "timestamp": int(time.time() * 1000)
+            }
+            producer.send(PRICE_UPDATES_TOPIC, key=zone_id.encode('utf-8'), value=update_event)
+            
     pipe.execute()
+    producer.flush()
 
 
 def run_consumer():
@@ -83,6 +106,13 @@ def run_consumer():
         auto_offset_reset="latest",
         group_id="ml-service-consumer",
     )
+    
+    producer = KafkaProducer(
+        bootstrap_servers=KAFKA_SERVERS,
+        value_serializer=lambda v: json.dumps(v).encode("utf-8")
+    )
+    
+    last_surge = {}
 
     logger.info("Kafka consumer started. Listening on topics: %s, %s", DEMAND_TOPIC, LOCATION_TOPIC)
     flush_counter = 0
@@ -99,7 +129,7 @@ def run_consumer():
 
             flush_counter += 1
             if flush_counter % 10 == 0:   # flush every 10 messages
-                _flush_to_redis(r)
+                _flush_to_redis(r, producer, last_surge)
 
         except Exception as exc:  # noqa: BLE001
             logger.error("Error processing Kafka message: %s", exc)
