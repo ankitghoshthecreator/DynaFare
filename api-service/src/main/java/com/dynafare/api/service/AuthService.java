@@ -42,8 +42,17 @@ public class AuthService {
         userRepository.save(user);
 
         if (user.getRole() == Role.DRIVER) {
+            String license = (request.getLicenseNo() != null && !request.getLicenseNo().isBlank()) 
+                    ? request.getLicenseNo() 
+                    : "LIC-" + java.util.UUID.randomUUID().toString().substring(0, 8);
+            String vehicle = (request.getVehicleType() != null && !request.getVehicleType().isBlank()) 
+                    ? request.getVehicleType() 
+                    : "STANDARD";
+
             var driver = Driver.builder()
                     .user(user)
+                    .licenseNo(license)
+                    .vehicleType(vehicle)
                     .status(DriverStatus.OFFLINE)
                     .build();
             driverRepository.save(driver);

@@ -1,0 +1,48 @@
+Good. I've now done a full audit. Here's an honest assessment:
+
+Remaining Issues Found
+Yes — there are 5 more real problems. Here's the full picture:
+
+🔴 Critical
+1. BookingController.getBooking() has NO ownership check
+Any authenticated user can fetch any booking by UUID — a security IDOR (Insecure Direct Object Reference) vulnerability. A rider could enumerate other riders' trip histories.
+📍 
+
+BookingController.java
+line 116
+
+2. LocationController trusts driverId from the request body
+Any authenticated user (including riders) can publish driver location events as any driver ID. A malicious rider could flood fake location data for real drivers, corrupting the demand aggregation.
+📍 
+
+LocationController.java
+line 21
+
+🟠 High
+3. createBooking() is not @Transactional — partial writes are possible
+tripRepository.save(trip) succeeds, then bookingRepository.save(booking) could fail (e.g., DB timeout). This leaves an orphaned Trip row with no booking attached, corrupting your data.
+📍 
+
+BookingController.java
+line 85–101
+
+4. kafka_consumer.py flushes on every 10th message, not time-based — zones with low traffic never flush
+If only 3 messages arrive in 5 minutes, the Redis cache is never updated. The ZoneAggregator accumulates data but the ML model reads stale values from Redis (or gets the default 1.0 surge).
+📍 
+
+kafka_consumer.py
+line 130-132
+
+🟡 Medium
+5. drivers.license_no is NOT NULL in the schema but Driver entity doesn't set it
+AuthService creates a Driver row with licenseNo = null. This will throw a DataIntegrityViolationException on every DRIVER registration.
+📍 
+
+AuthService.java
+line 44-49
+ vs 
+
+V1__init_schema.sql
+line 16
+
+Want me to fix all 5 now and push? They're all real bugs that would cause failures in production.

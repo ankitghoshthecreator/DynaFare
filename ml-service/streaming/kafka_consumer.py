@@ -116,6 +116,7 @@ def run_consumer():
 
     logger.info("Kafka consumer started. Listening on topics: %s, %s", DEMAND_TOPIC, LOCATION_TOPIC)
     flush_counter = 0
+    last_flush_time = time.time()
 
     for msg in consumer:
         try:
@@ -128,8 +129,11 @@ def run_consumer():
                 _aggregator.update_demand(data.get("zone_id", "unknown"), data.get("delta", 1))
 
             flush_counter += 1
-            if flush_counter % 10 == 0:   # flush every 10 messages
+            now = time.time()
+            if flush_counter % 10 == 0 or (now - last_flush_time) >= 5.0:
                 _flush_to_redis(r, producer, last_surge)
+                flush_counter = 0
+                last_flush_time = now
 
         except Exception as exc:  # noqa: BLE001
             logger.error("Error processing Kafka message: %s", exc)

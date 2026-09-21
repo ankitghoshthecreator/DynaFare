@@ -2,6 +2,7 @@ package com.dynafare.api.controller;
 
 import com.dynafare.api.domain.Booking;
 import com.dynafare.api.domain.Quote;
+import com.dynafare.api.domain.Role;
 import com.dynafare.api.domain.Trip;
 import com.dynafare.api.domain.User;
 import com.dynafare.api.dto.BookingRequest;
@@ -25,6 +26,7 @@ import org.springframework.web.server.ResponseStatusException;
 import jakarta.validation.Valid;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -66,6 +68,7 @@ public class BookingController {
         return ResponseEntity.ok(response);
     }
 
+    @Transactional
     @PostMapping("/bookings")
     public ResponseEntity<BookingResponse> createBooking(@RequestBody BookingRequest request, Authentication authentication) {
         User user = userRepository.findByEmail(authentication.getName())
@@ -114,9 +117,26 @@ public class BookingController {
 
     @GetMapping("/bookings/{id}")
     public ResponseEntity<BookingResponse> getBooking(@PathVariable UUID id, Authentication authentication) {
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
-                
+
+        // Fix Issue 1 (IDOR): verify caller owns or is assigned to this booking, or is ADMIN
+        UUID riderId = booking.getTrip().getRider().getId();
+        UUID driverUserId = (booking.getTrip().getDriver() != null && booking.getTrip().getDriver().getUser() != null)
+                ? booking.getTrip().getDriver().getUser().getId()
+                : null;
+
+        boolean isRider = riderId.equals(user.getId());
+        boolean isDriver = driverUserId != null && driverUserId.equals(user.getId());
+        boolean isAdmin = user.getRole() == Role.ADMIN;
+
+        if (!isRider && !isDriver && !isAdmin) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+        }
+
         BookingResponse response = BookingResponse.builder()
                 .bookingId(booking.getId())
                 .quoteId(booking.getQuote().getId())
