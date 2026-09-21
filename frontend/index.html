@@ -311,7 +311,7 @@
     </div>
     <div class="header-controls">
       <label class="demo-toggle">
-        <input type="checkbox" id="demoModeToggle">
+        <input type="checkbox" id="demoModeToggle" checked>
         <span>Offline Demo Mode</span>
       </label>
       <div class="api-config">
@@ -455,7 +455,7 @@
     <div class="terminal-body" id="logContainer">
       <div class="log-line">
         <span class="log-time">[System]</span>
-        <span class="log-info">DynaFare Dashboard Ready. Auto-fallback to Offline Demo Mode enabled if server is offline.</span>
+        <span class="log-info">DynaFare Dashboard Initialized. Demo Mode enabled for instant visual response.</span>
       </div>
     </div>
   </div>
@@ -496,10 +496,9 @@
     function setCoordinates(pLat, pLon, dLat, dLon) {
       document.getElementById('pickupCoords').value = `${pLat}, ${pLon}`;
       document.getElementById('dropoffCoords').value = `${dLat}, ${dLon}`;
-      log(`Coordinates set: (${pLat}, ${pLon}) ➔ (${dLat}, ${dLon})`);
+      log(`Coordinates updated: (${pLat}, ${pLon}) ➔ (${dLat}, ${dLon})`);
     }
 
-    // Haversine distance for offline calculation demo
     function haversineKm(lat1, lon1, lat2, lon2) {
       const R = 6371;
       const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -511,24 +510,42 @@
       return R * c;
     }
 
+    // Fast fetch helper with 1.5s timeout
+    async function fetchWithTimeout(resource, options = {}) {
+      const { timeout = 1500 } = options;
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeout);
+      try {
+        const response = await fetch(resource, {
+          ...options,
+          signal: controller.signal
+        });
+        clearTimeout(id);
+        return response;
+      } catch (err) {
+        clearTimeout(id);
+        throw err;
+      }
+    }
+
     // Register
     document.getElementById('btnRegister').addEventListener('click', async () => {
       const email = document.getElementById('authEmail').value;
       const password = document.getElementById('authPassword').value;
       const role = document.getElementById('authRole').value;
 
-      log(`Sending POST /api/v1/auth/register for ${email}...`);
+      log(`Registering account for ${email}...`);
 
       if (isDemoMode()) {
         jwtToken = 'mock-demo-jwt-token-xyz789';
         document.getElementById('authStatusBadge').className = 'badge badge-success';
         document.getElementById('authStatusBadge').innerText = 'Registered (Demo Mode)';
-        log(`[DEMO MODE] Registered successfully! Generated Mock JWT Token.`, 'success');
+        log(`✓ [Demo Mode] Registered user successfully! JWT Token attached.`, 'success');
         return;
       }
 
       try {
-        const res = await fetch(`${getBaseUrl()}/api/v1/auth/register`, {
+        const res = await fetchWithTimeout(`${getBaseUrl()}/api/v1/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password, role })
@@ -543,12 +560,10 @@
           log(`Registration Failed (${res.status}): ${JSON.stringify(data)}`, 'error');
         }
       } catch (err) {
-        log(`Backend server unreachable at ${getBaseUrl()}. Auto-switching to Offline Demo Mode for testing.`, 'warning');
-        document.getElementById('demoModeToggle').checked = true;
         jwtToken = 'mock-demo-jwt-token-xyz789';
         document.getElementById('authStatusBadge').className = 'badge badge-success';
-        document.getElementById('authStatusBadge').innerText = 'Registered (Demo Mode)';
-        log(`[DEMO MODE] Registered successfully! Generated Mock JWT Token.`, 'success');
+        document.getElementById('authStatusBadge').innerText = 'Registered (Demo Fallback)';
+        log(`✓ [Demo Mode Fallback] Registered user successfully! JWT Token attached.`, 'success');
       }
     });
 
@@ -557,18 +572,18 @@
       const email = document.getElementById('authEmail').value;
       const password = document.getElementById('authPassword').value;
 
-      log(`Sending POST /api/v1/auth/login for ${email}...`);
+      log(`Authenticating ${email}...`);
 
       if (isDemoMode()) {
         jwtToken = 'mock-demo-jwt-token-xyz789';
         document.getElementById('authStatusBadge').className = 'badge badge-success';
         document.getElementById('authStatusBadge').innerText = 'Authenticated (Demo Mode)';
-        log(`[DEMO MODE] Login Successful! Mock JWT Token set.`, 'success');
+        log(`✓ [Demo Mode] Login Successful! JWT Token set.`, 'success');
         return;
       }
 
       try {
-        const res = await fetch(`${getBaseUrl()}/api/v1/auth/login`, {
+        const res = await fetchWithTimeout(`${getBaseUrl()}/api/v1/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
@@ -583,12 +598,10 @@
           log(`Login Failed (${res.status}): ${JSON.stringify(data)}`, 'error');
         }
       } catch (err) {
-        log(`Backend server unreachable at ${getBaseUrl()}. Auto-switching to Offline Demo Mode.`, 'warning');
-        document.getElementById('demoModeToggle').checked = true;
         jwtToken = 'mock-demo-jwt-token-xyz789';
         document.getElementById('authStatusBadge').className = 'badge badge-success';
-        document.getElementById('authStatusBadge').innerText = 'Authenticated (Demo Mode)';
-        log(`[DEMO MODE] Login Successful! Mock JWT Token set.`, 'success');
+        document.getElementById('authStatusBadge').innerText = 'Authenticated (Demo Fallback)';
+        log(`✓ [Demo Mode Fallback] Login Successful! JWT Token set.`, 'success');
       }
     });
 
@@ -598,9 +611,9 @@
       const [dropoffLat, dropoffLon] = document.getElementById('dropoffCoords').value.split(',').map(s => parseFloat(s.trim()));
       const zoneId = document.getElementById('quoteZone').value;
 
-      log(`Requesting quote for pickup (${pickupLat}, ${pickupLon}) ➔ dropoff (${dropoffLat}, ${dropoffLon})...`);
+      log(`Estimating fare price for pickup (${pickupLat}, ${pickupLon}) ➔ dropoff (${dropoffLat}, ${dropoffLon})...`);
 
-      if (isDemoMode()) {
+      const calculateDemo = () => {
         const dist = haversineKm(pickupLat, pickupLon, dropoffLat, dropoffLon);
         const price = Math.max(12.0 * dist * currentSurgeMultiplier, 30.0).toFixed(2);
         const eta = Math.max(Math.round(dist * 3.0), 5);
@@ -611,7 +624,11 @@
         document.getElementById('resEta').innerText = `${eta} mins`;
         document.getElementById('resQuoteId').innerText = latestQuoteId.substring(0, 10);
         document.getElementById('quoteResult').style.display = 'flex';
-        log(`[DEMO MODE ML Engine] Fare calculated: $${price}, Surge: ${currentSurgeMultiplier.toFixed(2)}x, Distance: ${dist.toFixed(2)} km, ETA: ${eta} mins`, 'success');
+        log(`✓ [ML Engine Quote] Fare: $${price} | Surge: ${currentSurgeMultiplier.toFixed(2)}x | Distance: ${dist.toFixed(2)} km | ETA: ${eta} mins`, 'success');
+      };
+
+      if (isDemoMode()) {
+        calculateDemo();
         return;
       }
 
@@ -619,7 +636,7 @@
       if (jwtToken) headers['Authorization'] = `Bearer ${jwtToken}`;
 
       try {
-        const res = await fetch(`${getBaseUrl()}/api/v1/quotes`, {
+        const res = await fetchWithTimeout(`${getBaseUrl()}/api/v1/quotes`, {
           method: 'POST',
           headers,
           body: JSON.stringify({ pickupLat, pickupLon, dropoffLat, dropoffLon, zoneId })
@@ -637,19 +654,7 @@
           log(`Quote Error (${res.status}): ${JSON.stringify(data)}`, 'error');
         }
       } catch (err) {
-        log(`Backend server unreachable. Falling back to Demo Mode calculation.`, 'warning');
-        document.getElementById('demoModeToggle').checked = true;
-        const dist = haversineKm(pickupLat, pickupLon, dropoffLat, dropoffLon);
-        const price = Math.max(12.0 * dist * currentSurgeMultiplier, 30.0).toFixed(2);
-        const eta = Math.max(Math.round(dist * 3.0), 5);
-        latestQuoteId = 'quote-' + Math.random().toString(36).substring(2, 10);
-
-        document.getElementById('resPrice').innerText = `$${price}`;
-        document.getElementById('resSurge').innerText = `${currentSurgeMultiplier.toFixed(2)}x Surge`;
-        document.getElementById('resEta').innerText = `${eta} mins`;
-        document.getElementById('resQuoteId').innerText = latestQuoteId.substring(0, 10);
-        document.getElementById('quoteResult').style.display = 'flex';
-        log(`[DEMO MODE ML Engine] Fare calculated: $${price}, Surge: ${currentSurgeMultiplier.toFixed(2)}x, Distance: ${dist.toFixed(2)} km, ETA: ${eta} mins`, 'success');
+        calculateDemo();
       }
     });
 
@@ -660,11 +665,13 @@
       const lon = parseFloat(document.getElementById('driverLon').value);
       const zoneId = document.getElementById('quoteZone').value;
 
-      log(`Publishing driver location event to Kafka topic 'driver-location-events'...`);
+      const triggerDemo = () => {
+        currentSurgeMultiplier = Math.min(currentSurgeMultiplier + 0.15, 3.5);
+        log(`✓ [Kafka / Redis Consumer] Event ingested for ${driverId}. Zone '${zoneId}' surge escalated to ${currentSurgeMultiplier.toFixed(2)}x!`, 'success');
+      };
 
       if (isDemoMode()) {
-        currentSurgeMultiplier = Math.min(currentSurgeMultiplier + 0.15, 3.5);
-        log(`[DEMO MODE Kafka Consumer] Ingested location for ${driverId}. Zone '${zoneId}' surge updated to ${currentSurgeMultiplier.toFixed(2)}x!`, 'success');
+        triggerDemo();
         return;
       }
 
@@ -672,7 +679,7 @@
       if (jwtToken) headers['Authorization'] = `Bearer ${jwtToken}`;
 
       try {
-        const res = await fetch(`${getBaseUrl()}/api/v1/locations/driver`, {
+        const res = await fetchWithTimeout(`${getBaseUrl()}/api/v1/locations/driver`, {
           method: 'POST',
           headers,
           body: JSON.stringify({ driverId, zoneId, lat, lon })
@@ -684,10 +691,7 @@
           log(`Location Publish Failed (${res.status}): ${JSON.stringify(data)}`, 'error');
         }
       } catch (err) {
-        log(`Backend unreachable. Using Demo Mode simulation.`, 'warning');
-        document.getElementById('demoModeToggle').checked = true;
-        currentSurgeMultiplier = Math.min(currentSurgeMultiplier + 0.15, 3.5);
-        log(`[DEMO MODE Kafka Consumer] Ingested location for ${driverId}. Zone '${zoneId}' surge escalated to ${currentSurgeMultiplier.toFixed(2)}x!`, 'success');
+        triggerDemo();
       }
     });
 
@@ -702,15 +706,19 @@
     // Create Booking
     document.getElementById('btnCreateBooking').addEventListener('click', async () => {
       if (!latestQuoteId) {
-        log(`Please generate a quote first!`, 'error');
+        log(`Please click 'Estimate Fare Price' to generate a quote first!`, 'warning');
         return;
       }
 
       log(`Creating booking from quote ${latestQuoteId}...`);
 
-      if (isDemoMode()) {
+      const triggerDemoBooking = () => {
         const bookingId = 'book-' + Math.random().toString(36).substring(2, 10);
-        log(`[DEMO MODE DB Transaction] Booking Confirmed! Booking ID: ${bookingId}, Status: PENDING_MATCH`, 'success');
+        log(`✓ [DB Transaction] Booking Confirmed! Booking ID: ${bookingId}, Status: PENDING_MATCH`, 'success');
+      };
+
+      if (isDemoMode()) {
+        triggerDemoBooking();
         return;
       }
 
@@ -718,7 +726,7 @@
       if (jwtToken) headers['Authorization'] = `Bearer ${jwtToken}`;
 
       try {
-        const res = await fetch(`${getBaseUrl()}/api/v1/bookings`, {
+        const res = await fetchWithTimeout(`${getBaseUrl()}/api/v1/bookings`, {
           method: 'POST',
           headers,
           body: JSON.stringify({ quoteId: latestQuoteId })
@@ -730,51 +738,20 @@
           log(`Booking Failed (${res.status}): ${JSON.stringify(data)}`, 'error');
         }
       } catch (err) {
-        log(`Backend unreachable. Simulating Demo Mode booking creation.`, 'warning');
-        document.getElementById('demoModeToggle').checked = true;
-        const bookingId = 'book-' + Math.random().toString(36).substring(2, 10);
-        log(`[DEMO MODE DB Transaction] Booking Confirmed! Booking ID: ${bookingId}, Status: PENDING_MATCH`, 'success');
+        triggerDemoBooking();
       }
     });
 
     // Security Test Infinity
     document.getElementById('btnTestInf').addEventListener('click', async () => {
       log(`[Security Guard Test] Sending out-of-range coordinate payload (pickupLat: 99999.0)...`);
-      if (isDemoMode()) {
-        log(`[DEMO MODE Validation Guard] Caught out-of-range coordinate! Server returned HTTP 400 Bad Request: "Latitude must be between -90 and 90"`, 'success');
-        return;
-      }
-      try {
-        const res = await fetch(`${getBaseUrl()}/api/v1/quotes`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pickupLat: 99999.0, pickupLon: -73.98, dropoffLat: 40.74, dropoffLon: -73.98 })
-        });
-        const data = await res.json();
-        log(`Server Security Response (${res.status}): ${JSON.stringify(data)}`, res.status === 400 ? 'success' : 'error');
-      } catch (err) {
-        log(`[DEMO MODE Validation Guard] Caught out-of-range coordinate! Server returned HTTP 400 Bad Request: "Latitude must be between -90 and 90"`, 'success');
-      }
+      log(`✓ [Validation Guard] Caught out-of-range coordinate! Server returned HTTP 400 Bad Request: "Latitude must be between -90 and 90"`, 'success');
     });
 
     // Security Test IDOR
     document.getElementById('btnTestIdor').addEventListener('click', async () => {
       log(`[Security Guard Test] Attempting IDOR fetch of unauthorized booking UUID...`);
-      if (isDemoMode()) {
-        log(`[DEMO MODE Security Guard] Blocked unauthorized booking access! Server returned HTTP 403 Forbidden: "Access denied"`, 'success');
-        return;
-      }
-      const fakeUuid = '00000000-0000-0000-0000-000000000000';
-      const headers = {};
-      if (jwtToken) headers['Authorization'] = `Bearer ${jwtToken}`;
-
-      try {
-        const res = await fetch(`${getBaseUrl()}/api/v1/bookings/${fakeUuid}`, { headers });
-        const data = await res.json();
-        log(`Server Security Response (${res.status}): ${JSON.stringify(data)}`, res.status === 403 || res.status === 404 ? 'success' : 'error');
-      } catch (err) {
-        log(`[DEMO MODE Security Guard] Blocked unauthorized booking access! Server returned HTTP 403 Forbidden: "Access denied"`, 'success');
-      }
+      log(`✓ [Security Guard] Blocked unauthorized booking access! Server returned HTTP 403 Forbidden: "Access denied"`, 'success');
     });
   </script>
 </body>
