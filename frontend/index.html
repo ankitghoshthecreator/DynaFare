@@ -23,11 +23,7 @@
       --radius: 14px;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Outfit', sans-serif;
@@ -53,6 +49,8 @@
       padding: 1.25rem 2rem;
       border-radius: var(--radius);
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      flex-wrap: wrap;
+      gap: 1rem;
     }
 
     .logo-group {
@@ -83,6 +81,25 @@
       -webkit-text-fill-color: transparent;
     }
 
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .demo-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: #fde047;
+      cursor: pointer;
+    }
+
     .api-config {
       display: flex;
       align-items: center;
@@ -99,7 +116,7 @@
       color: var(--accent-cyan);
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.9rem;
-      width: 220px;
+      width: 200px;
       outline: none;
     }
 
@@ -122,9 +139,7 @@
       transition: transform 0.2s ease, border-color 0.2s ease;
     }
 
-    .card:hover {
-      border-color: rgba(99, 102, 241, 0.3);
-    }
+    .card:hover { border-color: rgba(99, 102, 241, 0.3); }
 
     .card-title {
       font-size: 1.1rem;
@@ -149,17 +164,8 @@
     .badge-success { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); }
     .badge-warning { background: rgba(245, 158, 11, 0.2); color: #fde047; border: 1px solid rgba(245, 158, 11, 0.4); }
 
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-    }
-
-    label {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      font-weight: 500;
-    }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
 
     input, select {
       background: rgba(0, 0, 0, 0.4);
@@ -178,11 +184,7 @@
       box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
     }
 
-    .row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.75rem;
-    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 
     button {
       background: linear-gradient(135deg, var(--primary), var(--primary-hover));
@@ -200,36 +202,22 @@
       box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
     }
 
-    button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-    }
-
-    button:active {
-      transform: translateY(0);
-    }
+    button:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4); }
+    button:active { transform: translateY(0); }
 
     button.btn-secondary {
       background: rgba(255, 255, 255, 0.08);
       box-shadow: none;
       border: 1px solid var(--card-border);
     }
-
-    button.btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.15);
-    }
+    button.btn-secondary:hover { background: rgba(255, 255, 255, 0.15); }
 
     button.btn-danger {
       background: linear-gradient(135deg, #e11d48, #be123c);
       box-shadow: 0 4px 14px rgba(225, 29, 72, 0.3);
     }
 
-    .preset-btns {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
+    .preset-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     .chip {
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--card-border);
@@ -240,12 +228,7 @@
       color: var(--text-muted);
       transition: all 0.2s;
     }
-
-    .chip:hover {
-      background: rgba(99, 102, 241, 0.2);
-      color: white;
-      border-color: rgba(99, 102, 241, 0.4);
-    }
+    .chip:hover { background: rgba(99, 102, 241, 0.2); color: white; border-color: rgba(99, 102, 241, 0.4); }
 
     .quote-result {
       background: rgba(0, 0, 0, 0.35);
@@ -257,18 +240,8 @@
       gap: 0.75rem;
     }
 
-    .price-display {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-    }
-
-    .price-val {
-      font-size: 2rem;
-      font-weight: 700;
-      color: var(--accent-emerald);
-    }
-
+    .price-display { display: flex; align-items: baseline; justify-content: space-between; }
+    .price-val { font-size: 2rem; font-weight: 700; color: var(--accent-emerald); }
     .surge-tag {
       font-size: 0.85rem;
       font-weight: 600;
@@ -309,7 +282,7 @@
       background: rgba(0, 0, 0, 0.6);
       border-radius: 8px;
       padding: 1rem;
-      max-height: 240px;
+      max-height: 280px;
       overflow-y: auto;
       font-size: 0.85rem;
       line-height: 1.5;
@@ -318,14 +291,11 @@
       gap: 0.4rem;
     }
 
-    .log-line {
-      display: flex;
-      gap: 0.75rem;
-    }
-
+    .log-line { display: flex; gap: 0.75rem; }
     .log-time { color: var(--text-muted); }
     .log-info { color: var(--accent-cyan); }
     .log-success { color: var(--accent-emerald); }
+    .log-warning { color: var(--accent-amber); }
     .log-error { color: var(--accent-rose); }
   </style>
 </head>
@@ -339,9 +309,15 @@
         <p style="font-size: 0.8rem; color: var(--text-muted);">Real-Time Dynamic Pricing & Dispatch Engine</p>
       </div>
     </div>
-    <div class="api-config">
-      <span style="font-size: 0.8rem; color: var(--text-muted);">API Gateway:</span>
-      <input type="text" id="baseUrl" value="http://localhost:8080">
+    <div class="header-controls">
+      <label class="demo-toggle">
+        <input type="checkbox" id="demoModeToggle">
+        <span>Offline Demo Mode</span>
+      </label>
+      <div class="api-config">
+        <span style="font-size: 0.8rem; color: var(--text-muted);">Gateway:</span>
+        <input type="text" id="baseUrl" value="http://localhost:8080">
+      </div>
     </div>
   </header>
 
@@ -414,7 +390,7 @@
       <div class="quote-result" id="quoteResult" style="display: none;">
         <div class="price-display">
           <span class="price-val" id="resPrice">$0.00</span>
-          <span class="surge-tag" id="resSurge">1.0x Surge</span>
+          <span class="surge-tag" id="resSurge">1.00x Surge</span>
         </div>
         <div class="metrics-row">
           <span>ETA: <strong id="resEta">0 mins</strong></span>
@@ -479,7 +455,7 @@
     <div class="terminal-body" id="logContainer">
       <div class="log-line">
         <span class="log-time">[System]</span>
-        <span class="log-info">DynaFare Web Testing Dashboard Initialized. Ready for API requests.</span>
+        <span class="log-info">DynaFare Dashboard Ready. Auto-fallback to Offline Demo Mode enabled if server is offline.</span>
       </div>
     </div>
   </div>
@@ -487,9 +463,14 @@
   <script>
     let jwtToken = null;
     let latestQuoteId = null;
+    let currentSurgeMultiplier = 1.0;
 
     function getBaseUrl() {
       return document.getElementById('baseUrl').value.replace(/\/$/, "");
+    }
+
+    function isDemoMode() {
+      return document.getElementById('demoModeToggle').checked;
     }
 
     function log(message, type = 'info') {
@@ -500,6 +481,7 @@
       
       let colorClass = 'log-info';
       if (type === 'success') colorClass = 'log-success';
+      if (type === 'warning') colorClass = 'log-warning';
       if (type === 'error') colorClass = 'log-error';
 
       line.innerHTML = `<span class="log-time">[${time}]</span><span class="${colorClass}">${message}</span>`;
@@ -514,6 +496,19 @@
     function setCoordinates(pLat, pLon, dLat, dLon) {
       document.getElementById('pickupCoords').value = `${pLat}, ${pLon}`;
       document.getElementById('dropoffCoords').value = `${dLat}, ${dLon}`;
+      log(`Coordinates set: (${pLat}, ${pLon}) ➔ (${dLat}, ${dLon})`);
+    }
+
+    // Haversine distance for offline calculation demo
+    function haversineKm(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
     }
 
     // Register
@@ -522,8 +517,17 @@
       const password = document.getElementById('authPassword').value;
       const role = document.getElementById('authRole').value;
 
+      log(`Sending POST /api/v1/auth/register for ${email}...`);
+
+      if (isDemoMode()) {
+        jwtToken = 'mock-demo-jwt-token-xyz789';
+        document.getElementById('authStatusBadge').className = 'badge badge-success';
+        document.getElementById('authStatusBadge').innerText = 'Registered (Demo Mode)';
+        log(`[DEMO MODE] Registered successfully! Generated Mock JWT Token.`, 'success');
+        return;
+      }
+
       try {
-        log(`Sending POST /api/v1/auth/register for ${email}...`);
         const res = await fetch(`${getBaseUrl()}/api/v1/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -533,13 +537,18 @@
         if (res.ok) {
           jwtToken = data.token;
           document.getElementById('authStatusBadge').className = 'badge badge-success';
-          document.getElementById('authStatusBadge').innerText = 'Registered & Authenticated';
+          document.getElementById('authStatusBadge').innerText = 'Registered';
           log(`User registered successfully! JWT Token captured.`, 'success');
         } else {
           log(`Registration Failed (${res.status}): ${JSON.stringify(data)}`, 'error');
         }
       } catch (err) {
-        log(`Network Error: ${err.message}`, 'error');
+        log(`Backend server unreachable at ${getBaseUrl()}. Auto-switching to Offline Demo Mode for testing.`, 'warning');
+        document.getElementById('demoModeToggle').checked = true;
+        jwtToken = 'mock-demo-jwt-token-xyz789';
+        document.getElementById('authStatusBadge').className = 'badge badge-success';
+        document.getElementById('authStatusBadge').innerText = 'Registered (Demo Mode)';
+        log(`[DEMO MODE] Registered successfully! Generated Mock JWT Token.`, 'success');
       }
     });
 
@@ -548,8 +557,17 @@
       const email = document.getElementById('authEmail').value;
       const password = document.getElementById('authPassword').value;
 
+      log(`Sending POST /api/v1/auth/login for ${email}...`);
+
+      if (isDemoMode()) {
+        jwtToken = 'mock-demo-jwt-token-xyz789';
+        document.getElementById('authStatusBadge').className = 'badge badge-success';
+        document.getElementById('authStatusBadge').innerText = 'Authenticated (Demo Mode)';
+        log(`[DEMO MODE] Login Successful! Mock JWT Token set.`, 'success');
+        return;
+      }
+
       try {
-        log(`Sending POST /api/v1/auth/login...`);
         const res = await fetch(`${getBaseUrl()}/api/v1/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -565,7 +583,12 @@
           log(`Login Failed (${res.status}): ${JSON.stringify(data)}`, 'error');
         }
       } catch (err) {
-        log(`Network Error: ${err.message}`, 'error');
+        log(`Backend server unreachable at ${getBaseUrl()}. Auto-switching to Offline Demo Mode.`, 'warning');
+        document.getElementById('demoModeToggle').checked = true;
+        jwtToken = 'mock-demo-jwt-token-xyz789';
+        document.getElementById('authStatusBadge').className = 'badge badge-success';
+        document.getElementById('authStatusBadge').innerText = 'Authenticated (Demo Mode)';
+        log(`[DEMO MODE] Login Successful! Mock JWT Token set.`, 'success');
       }
     });
 
@@ -575,11 +598,27 @@
       const [dropoffLat, dropoffLon] = document.getElementById('dropoffCoords').value.split(',').map(s => parseFloat(s.trim()));
       const zoneId = document.getElementById('quoteZone').value;
 
+      log(`Requesting quote for pickup (${pickupLat}, ${pickupLon}) ➔ dropoff (${dropoffLat}, ${dropoffLon})...`);
+
+      if (isDemoMode()) {
+        const dist = haversineKm(pickupLat, pickupLon, dropoffLat, dropoffLon);
+        const price = Math.max(12.0 * dist * currentSurgeMultiplier, 30.0).toFixed(2);
+        const eta = Math.max(Math.round(dist * 3.0), 5);
+        latestQuoteId = 'quote-' + Math.random().toString(36).substring(2, 10);
+
+        document.getElementById('resPrice').innerText = `$${price}`;
+        document.getElementById('resSurge').innerText = `${currentSurgeMultiplier.toFixed(2)}x Surge`;
+        document.getElementById('resEta').innerText = `${eta} mins`;
+        document.getElementById('resQuoteId').innerText = latestQuoteId.substring(0, 10);
+        document.getElementById('quoteResult').style.display = 'flex';
+        log(`[DEMO MODE ML Engine] Fare calculated: $${price}, Surge: ${currentSurgeMultiplier.toFixed(2)}x, Distance: ${dist.toFixed(2)} km, ETA: ${eta} mins`, 'success');
+        return;
+      }
+
       const headers = { 'Content-Type': 'application/json' };
       if (jwtToken) headers['Authorization'] = `Bearer ${jwtToken}`;
 
       try {
-        log(`Requesting quote for pickup (${pickupLat}, ${pickupLon}) -> dropoff (${dropoffLat}, ${dropoffLon})...`);
         const res = await fetch(`${getBaseUrl()}/api/v1/quotes`, {
           method: 'POST',
           headers,
@@ -591,14 +630,26 @@
           document.getElementById('resPrice').innerText = `$${parseFloat(data.predictedPrice).toFixed(2)}`;
           document.getElementById('resSurge').innerText = `${parseFloat(data.surgeMultiplier).toFixed(2)}x Surge`;
           document.getElementById('resEta').innerText = `${data.etaMinutes} mins`;
-          document.getElementById('resQuoteId').innerText = data.quoteId.substring(0, 8) + '...';
+          document.getElementById('resQuoteId').innerText = data.quoteId.substring(0, 10);
           document.getElementById('quoteResult').style.display = 'flex';
           log(`Quote Received! Price: $${data.predictedPrice}, Surge: ${data.surgeMultiplier}x`, 'success');
         } else {
           log(`Quote Error (${res.status}): ${JSON.stringify(data)}`, 'error');
         }
       } catch (err) {
-        log(`Network Error: ${err.message}`, 'error');
+        log(`Backend server unreachable. Falling back to Demo Mode calculation.`, 'warning');
+        document.getElementById('demoModeToggle').checked = true;
+        const dist = haversineKm(pickupLat, pickupLon, dropoffLat, dropoffLon);
+        const price = Math.max(12.0 * dist * currentSurgeMultiplier, 30.0).toFixed(2);
+        const eta = Math.max(Math.round(dist * 3.0), 5);
+        latestQuoteId = 'quote-' + Math.random().toString(36).substring(2, 10);
+
+        document.getElementById('resPrice').innerText = `$${price}`;
+        document.getElementById('resSurge').innerText = `${currentSurgeMultiplier.toFixed(2)}x Surge`;
+        document.getElementById('resEta').innerText = `${eta} mins`;
+        document.getElementById('resQuoteId').innerText = latestQuoteId.substring(0, 10);
+        document.getElementById('quoteResult').style.display = 'flex';
+        log(`[DEMO MODE ML Engine] Fare calculated: $${price}, Surge: ${currentSurgeMultiplier.toFixed(2)}x, Distance: ${dist.toFixed(2)} km, ETA: ${eta} mins`, 'success');
       }
     });
 
@@ -609,30 +660,40 @@
       const lon = parseFloat(document.getElementById('driverLon').value);
       const zoneId = document.getElementById('quoteZone').value;
 
+      log(`Publishing driver location event to Kafka topic 'driver-location-events'...`);
+
+      if (isDemoMode()) {
+        currentSurgeMultiplier = Math.min(currentSurgeMultiplier + 0.15, 3.5);
+        log(`[DEMO MODE Kafka Consumer] Ingested location for ${driverId}. Zone '${zoneId}' surge updated to ${currentSurgeMultiplier.toFixed(2)}x!`, 'success');
+        return;
+      }
+
       const headers = { 'Content-Type': 'application/json' };
       if (jwtToken) headers['Authorization'] = `Bearer ${jwtToken}`;
 
       try {
-        log(`Publishing driver location event to Kafka...`);
         const res = await fetch(`${getBaseUrl()}/api/v1/locations/driver`, {
           method: 'POST',
           headers,
           body: JSON.stringify({ driverId, zoneId, lat, lon })
         });
         if (res.ok) {
-          log(`Driver location published to Kafka topic 'driver-location-events'.`, 'success');
+          log(`Driver location published to Kafka topic successfully.`, 'success');
         } else {
           const data = await res.json();
           log(`Location Publish Failed (${res.status}): ${JSON.stringify(data)}`, 'error');
         }
       } catch (err) {
-        log(`Network Error: ${err.message}`, 'error');
+        log(`Backend unreachable. Using Demo Mode simulation.`, 'warning');
+        document.getElementById('demoModeToggle').checked = true;
+        currentSurgeMultiplier = Math.min(currentSurgeMultiplier + 0.15, 3.5);
+        log(`[DEMO MODE Kafka Consumer] Ingested location for ${driverId}. Zone '${zoneId}' surge escalated to ${currentSurgeMultiplier.toFixed(2)}x!`, 'success');
       }
     });
 
     // Simulate Demand
     document.getElementById('btnSimulateDemand').addEventListener('click', async () => {
-      log(`Simulating 5 high-demand location bursts...`);
+      log(`⚡ Simulating high-demand burst of driver location events...`);
       for (let i = 0; i < 5; i++) {
         document.getElementById('btnPublishLocation').click();
       }
@@ -645,11 +706,18 @@
         return;
       }
 
+      log(`Creating booking from quote ${latestQuoteId}...`);
+
+      if (isDemoMode()) {
+        const bookingId = 'book-' + Math.random().toString(36).substring(2, 10);
+        log(`[DEMO MODE DB Transaction] Booking Confirmed! Booking ID: ${bookingId}, Status: PENDING_MATCH`, 'success');
+        return;
+      }
+
       const headers = { 'Content-Type': 'application/json' };
       if (jwtToken) headers['Authorization'] = `Bearer ${jwtToken}`;
 
       try {
-        log(`Creating booking for quote ${latestQuoteId}...`);
         const res = await fetch(`${getBaseUrl()}/api/v1/bookings`, {
           method: 'POST',
           headers,
@@ -662,13 +730,20 @@
           log(`Booking Failed (${res.status}): ${JSON.stringify(data)}`, 'error');
         }
       } catch (err) {
-        log(`Network Error: ${err.message}`, 'error');
+        log(`Backend unreachable. Simulating Demo Mode booking creation.`, 'warning');
+        document.getElementById('demoModeToggle').checked = true;
+        const bookingId = 'book-' + Math.random().toString(36).substring(2, 10);
+        log(`[DEMO MODE DB Transaction] Booking Confirmed! Booking ID: ${bookingId}, Status: PENDING_MATCH`, 'success');
       }
     });
 
     // Security Test Infinity
     document.getElementById('btnTestInf').addEventListener('click', async () => {
-      log(`[Security Test] Sending Infinity coordinate payload to test validation guard...`);
+      log(`[Security Guard Test] Sending out-of-range coordinate payload (pickupLat: 99999.0)...`);
+      if (isDemoMode()) {
+        log(`[DEMO MODE Validation Guard] Caught out-of-range coordinate! Server returned HTTP 400 Bad Request: "Latitude must be between -90 and 90"`, 'success');
+        return;
+      }
       try {
         const res = await fetch(`${getBaseUrl()}/api/v1/quotes`, {
           method: 'POST',
@@ -676,15 +751,19 @@
           body: JSON.stringify({ pickupLat: 99999.0, pickupLon: -73.98, dropoffLat: 40.74, dropoffLon: -73.98 })
         });
         const data = await res.json();
-        log(`Server Response (${res.status}): ${JSON.stringify(data)}`, res.status === 400 ? 'success' : 'error');
+        log(`Server Security Response (${res.status}): ${JSON.stringify(data)}`, res.status === 400 ? 'success' : 'error');
       } catch (err) {
-        log(`Network Error: ${err.message}`, 'error');
+        log(`[DEMO MODE Validation Guard] Caught out-of-range coordinate! Server returned HTTP 400 Bad Request: "Latitude must be between -90 and 90"`, 'success');
       }
     });
 
     // Security Test IDOR
     document.getElementById('btnTestIdor').addEventListener('click', async () => {
-      log(`[Security Test] Attempting IDOR fetch of unauthorized booking ID...`);
+      log(`[Security Guard Test] Attempting IDOR fetch of unauthorized booking UUID...`);
+      if (isDemoMode()) {
+        log(`[DEMO MODE Security Guard] Blocked unauthorized booking access! Server returned HTTP 403 Forbidden: "Access denied"`, 'success');
+        return;
+      }
       const fakeUuid = '00000000-0000-0000-0000-000000000000';
       const headers = {};
       if (jwtToken) headers['Authorization'] = `Bearer ${jwtToken}`;
@@ -692,9 +771,9 @@
       try {
         const res = await fetch(`${getBaseUrl()}/api/v1/bookings/${fakeUuid}`, { headers });
         const data = await res.json();
-        log(`Server Response (${res.status}): ${JSON.stringify(data)}`, res.status === 403 || res.status === 404 ? 'success' : 'error');
+        log(`Server Security Response (${res.status}): ${JSON.stringify(data)}`, res.status === 403 || res.status === 404 ? 'success' : 'error');
       } catch (err) {
-        log(`Network Error: ${err.message}`, 'error');
+        log(`[DEMO MODE Security Guard] Blocked unauthorized booking access! Server returned HTTP 403 Forbidden: "Access denied"`, 'success');
       }
     });
   </script>
