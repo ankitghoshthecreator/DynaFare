@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class QuoteRequest {
     private Double pickupLat;
-    private Double pickupLng;
+    private Double pickupLon;
     private Double dropoffLat;
-    private Double dropoffLng;
+    private Double dropoffLon;
 }

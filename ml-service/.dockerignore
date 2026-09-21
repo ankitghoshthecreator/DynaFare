@@ -23,9 +23,10 @@ htmlcov/
 dist/
 build/
 
-# Model artifacts (loaded at runtime or from object storage)
-model/*.json
-model/*.ubj
+# Model artifacts
+# (Uncomment below if switching to S3/GCS model loading at runtime)
+# model/*.json
+# model/*.ubj
 
 # Editor / OS
 .DS_Store
