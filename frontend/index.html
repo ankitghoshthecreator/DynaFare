@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DynaFare — Real-Time Dynamic Fare & Dispatch Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --card-bg: rgba(18, 26, 43, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.12) 0%, transparent 40%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
+      padding: 1.25rem 2rem;
+      border-radius: var(--radius);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--primary), var(--accent-cyan));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.25rem;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(to right, #fff, #a5b4fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .api-config {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+    }
+
+    .api-config input {
+      background: transparent;
+      border: none;
+      color: var(--accent-cyan);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      width: 220px;
+      outline: none;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 0.75rem;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 20px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-primary { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); }
+    .badge-success { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .badge-warning { background: rgba(245, 158, 11, 0.2); color: #fde047; border: 1px solid rgba(245, 158, 11, 0.4); }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    input, select {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 0.65rem 0.85rem;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    button {
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      color: white;
+      border: none;
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button.btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: none;
+      border: 1px solid var(--card-border);
+    }
+
+    button.btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    button.btn-danger {
+      background: linear-gradient(135deg, #e11d48, #be123c);
+      box-shadow: 0 4px 14px rgba(225, 29, 72, 0.3);
+    }
+
+    .preset-btns {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      padding: 0.35rem 0.65rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+
+    .chip:hover {
+      background: rgba(99, 102, 241, 0.2);
+      color: white;
+      border-color: rgba(99, 102, 241, 0.4);
+    }
+
+    .quote-result {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .price-display {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .price-val {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent-emerald);
+    }
+
+    .surge-tag {
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--accent-amber);
+    }
+
+    .metrics-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 0.5rem;
+    }
+
+    .terminal-card {
+      grid-column: 1 / -1;
+      background: #070a12;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .terminal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .terminal-body {
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 8px;
+      padding: 1rem;
+      max-height: 240px;
+      overflow-y: auto;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .log-line {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .log-time { color: var(--text-muted); }
+    .log-info { color: var(--accent-cyan); }
+    .log-success { color: var(--accent-emerald); }
+    .log-error { color: var(--accent-rose); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo-group">
+      <div class="logo-icon">DF</div>
+      <div>
+        <h1>DynaFare Dashboard</h1>
+        <p style="font-size: 0.8rem; color: var(--text-muted);">Real-Time Dynamic Pricing & Dispatch Engine</p>
+      </div>
+    </div>
+    <div class="api-config">
+      <span style="font-size: 0.8rem; color: var(--text-muted);">API Gateway:</span>
+      <input type="text" id="baseUrl" value="http://localhost:8080">
+    </div>
+  </header>
+
+  <div class="dashboard-grid">
+
+    <!-- 1. Authentication Card -->
+    <div class="card">
+      <div class="card-title">
+        <span>1. Identity & Auth</span>
+        <span class="badge badge-primary" id="authStatusBadge">Unauthenticated</span>
+      </div>
+
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="authEmail" value="rider@dynafare.com">
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="authPassword" value="SecretPassword123!">
+      </div>
+
+      <div class="row">
+        <div class="form-group">
+          <label>Role</label>
+          <select id="authRole">
+            <option value="RIDER">Rider</option>
+            <option value="DRIVER">Driver</option>
+            <option value="ADMIN">Admin</option>
+          </select>
+        </div>
+        <div class="form-group" style="justify-content: flex-end;">
+          <button id="btnRegister" class="btn-secondary">Register</button>
+        </div>
+      </div>
+
+      <button id="btnLogin">Sign In & Attach JWT</button>
+    </div>
+
+    <!-- 2. Dynamic Quote Engine -->
+    <div class="card">
+      <div class="card-title">
+        <span>2. Dynamic Quote Estimator</span>
+        <span class="badge badge-primary">ML Service</span>
+      </div>
+
+      <div class="preset-btns">
+        <span class="chip" onclick="setCoordinates(40.758896, -73.985130, 40.748817, -73.985428)">Times Sq ➔ Empire State</span>
+        <span class="chip" onclick="setCoordinates(40.758896, -73.985130, 40.641311, -73.778138)">Times Sq ➔ JFK Airport</span>
+      </div>
+
+      <div class="row">
+        <div class="form-group">
+          <label>Pickup Lat/Lon</label>
+          <input type="text" id="pickupCoords" value="40.758896, -73.985130">
+        </div>
+        <div class="form-group">
+          <label>Dropoff Lat/Lon</label>
+          <input type="text" id="dropoffCoords" value="40.748817, -73.985428">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Zone Identifier</label>
+        <input type="text" id="quoteZone" value="zone-nyc-1">
+      </div>
+
+      <button id="btnGetQuote">Estimate Fare Price</button>
+
+      <div class="quote-result" id="quoteResult" style="display: none;">
+        <div class="price-display">
+          <span class="price-val" id="resPrice">$0.00</span>
+          <span class="surge-tag" id="resSurge">1.0x Surge</span>
+        </div>
+        <div class="metrics-row">
+          <span>ETA: <strong id="resEta">0 mins</strong></span>
+          <span>Quote ID: <strong id="resQuoteId" style="font-family: monospace;">-</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Driver Location & Streaming Publisher -->
+    <div class="card">
+      <div class="card-title">
+        <span>3. Driver Location & Surge</span>
+        <span class="badge badge-warning">Kafka / Redis</span>
+      </div>
+
+      <div class="form-group">
+        <label>Driver ID</label>
+        <input type="text" id="driverIdInput" value="driver-uuid-001">
+      </div>
+
+      <div class="row">
+        <div class="form-group">
+          <label>Driver Lat</label>
+          <input type="text" id="driverLat" value="40.758896">
+        </div>
+        <div class="form-group">
+          <label>Driver Lon</label>
+          <input type="text" id="driverLon" value="-73.985130">
+        </div>
+      </div>
+
+      <button id="btnPublishLocation" class="btn-secondary">Publish Location Event</button>
+      <button id="btnSimulateDemand">⚡ Simulate High Demand (+5 Events)</button>
+    </div>
+
+    <!-- 4. Booking Creation & Security Sandbox -->
+    <div class="card">
+      <div class="card-title">
+        <span>4. Booking & Security Sandbox</span>
+        <span class="badge badge-success">Production Guards</span>
+      </div>
+
+      <button id="btnCreateBooking">Create Booking from Quote</button>
+      
+      <div style="border-top: 1px solid var(--card-border); margin-top: 0.5rem; padding-top: 0.75rem;">
+        <label style="margin-bottom: 0.5rem; display: block;">Edge Case Security Tests:</label>
+        <div class="preset-btns">
+          <button id="btnTestInf" class="btn-danger" style="font-size: 0.75rem; padding: 0.5rem;">Test Infinity Coords Guard</button>
+          <button id="btnTestIdor" class="btn-danger" style="font-size: 0.75rem; padding: 0.5rem;">Test IDOR Guard</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Real-Time Activity Log -->
+  <div class="terminal-card">
+    <div class="terminal-header">
+      <span style="font-weight: 600; color: var(--text-muted); font-size: 0.85rem;">System Logs & API Traffic</span>
+      <button onclick="clearLogs()" class="btn-secondary" style="font-size: 0.7rem; padding: 0.25rem 0.5rem;">Clear Logs</button>
+    </div>
+    <div class="terminal-body" id="logContainer">
+      <div class="log-line">
+        <span class="log-time">[System]</span>
+        <span class="log-info">DynaFare Web Testing Dashboard Initialized. Ready for API requests.</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let jwtToken = null;
+    let latestQuoteId = null;
+
+    function getBaseUrl() {
+      return document.getElementById('baseUrl').value.replace(/\/$/, "");
+    }
+
+    function log(message, type = 'info') {
+      const container = document.getElementById('logContainer');
+      const time = new Date().toLocaleTimeString();
+      const line = document.createElement('div');
+      line.className = 'log-line';
+      
+      let colorClass = 'log-info';
+      if (type === 'success') colorClass = 'log-success';
+      if (type === 'error') colorClass = 'log-error';
+
+      line.innerHTML = `<span class="log-time">[${time}]</span><span class="${colorClass}">${message}</span>`;
+      container.appendChild(line);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function clearLogs() {
+      document.getElementById('logContainer').innerHTML = '';
+    }
+
+    function setCoordinates(pLat, pLon, dLat, dLon) {
+      document.getElementById('pickupCoords').value = `${pLat}, ${pLon}`;
+      document.getElementById('dropoffCoords').value = `${dLat}, ${dLon}`;
+    }
+
+    // Register
+    document.getElementById('btnRegister').addEventListener('click', async () => {
+      const email = document.getElementById('authEmail').value;
+      const password = document.getElementById('authPassword').value;
+      const role = document.getElementById('authRole').value;
+
+      try {
+        log(`Sending POST /api/v1/auth/register for ${email}...`);
+        const res = await fetch(`${getBaseUrl()}/api/v1/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, role })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          jwtToken = data.token;
+          document.getElementById('authStatusBadge').className = 'badge badge-success';
+          document.getElementById('authStatusBadge').innerText = 'Registered & Authenticated';
+          log(`User registered successfully! JWT Token captured.`, 'success');
+        } else {
+          log(`Registration Failed (${res.status}): ${JSON.stringify(data)}`, 'error');
+        }
+      } catch (err) {
+        log(`Network Error: ${err.message}`, 'error');
+      }
+    });
+
+    // Login
+    document.getElementById('btnLogin').addEventListener('click', async () => {
+      const email = document.getElementById('authEmail').value;
+      const password = document.getElementById('authPassword').value;
+
+      try {
+        log(`Sending POST /api/v1/auth/login...`);
+        const res = await fetch(`${getBaseUrl()}/api/v1/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          jwtToken = data.token;
+          document.getElementById('authStatusBadge').className = 'badge badge-success';
+          document.getElementById('authStatusBadge').innerText = 'Authenticated';
+          log(`Login Successful! JWT Token set.`, 'success');
+        } else {
+          log(`Login Failed (${res.status}): ${JSON.stringify(data)}`, 'error');
+        }
+      } catch (err) {
+        log(`Network Error: ${err.message}`, 'error');
+      }
+    });
+
+    // Get Quote
+    document.getElementById('btnGetQuote').addEventListener('click', async () => {
+      const [pickupLat, pickupLon] = document.getElementById('pickupCoords').value.split(',').map(s => parseFloat(s.trim()));
+      const [dropoffLat, dropoffLon] = document.getElementById('dropoffCoords').value.split(',').map(s => parseFloat(s.trim()));
+      const zoneId = document.getElementById('quoteZone').value;
+
+      const headers = { 'Content-Type': 'application/json' };
+      if (jwtToken) headers['Authorization'] = `Bearer ${jwtToken}`;
+
+      try {
+        log(`Requesting quote for pickup (${pickupLat}, ${pickupLon}) -> dropoff (${dropoffLat}, ${dropoffLon})...`);
+        const res = await fetch(`${getBaseUrl()}/api/v1/quotes`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ pickupLat, pickupLon, dropoffLat, dropoffLon, zoneId })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          latestQuoteId = data.quoteId;
+          document.getElementById('resPrice').innerText = `$${parseFloat(data.predictedPrice).toFixed(2)}`;
+          document.getElementById('resSurge').innerText = `${parseFloat(data.surgeMultiplier).toFixed(2)}x Surge`;
+          document.getElementById('resEta').innerText = `${data.etaMinutes} mins`;
+          document.getElementById('resQuoteId').innerText = data.quoteId.substring(0, 8) + '...';
+          document.getElementById('quoteResult').style.display = 'flex';
+          log(`Quote Received! Price: $${data.predictedPrice}, Surge: ${data.surgeMultiplier}x`, 'success');
+        } else {
+          log(`Quote Error (${res.status}): ${JSON.stringify(data)}`, 'error');
+        }
+      } catch (err) {
+        log(`Network Error: ${err.message}`, 'error');
+      }
+    });
+
+    // Publish Location
+    document.getElementById('btnPublishLocation').addEventListener('click', async () => {
+      const driverId = document.getElementById('driverIdInput').value;
+      const lat = parseFloat(document.getElementById('driverLat').value);
+      const lon = parseFloat(document.getElementById('driverLon').value);
+      const zoneId = document.getElementById('quoteZone').value;
+
+      const headers = { 'Content-Type': 'application/json' };
+      if (jwtToken) headers['Authorization'] = `Bearer ${jwtToken}`;
+
+      try {
+        log(`Publishing driver location event to Kafka...`);
+        const res = await fetch(`${getBaseUrl()}/api/v1/locations/driver`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ driverId, zoneId, lat, lon })
+        });
+        if (res.ok) {
+          log(`Driver location published to Kafka topic 'driver-location-events'.`, 'success');
+        } else {
+          const data = await res.json();
+          log(`Location Publish Failed (${res.status}): ${JSON.stringify(data)}`, 'error');
+        }
+      } catch (err) {
+        log(`Network Error: ${err.message}`, 'error');
+      }
+    });
+
+    // Simulate Demand
+    document.getElementById('btnSimulateDemand').addEventListener('click', async () => {
+      log(`Simulating 5 high-demand location bursts...`);
+      for (let i = 0; i < 5; i++) {
+        document.getElementById('btnPublishLocation').click();
+      }
+    });
+
+    // Create Booking
+    document.getElementById('btnCreateBooking').addEventListener('click', async () => {
+      if (!latestQuoteId) {
+        log(`Please generate a quote first!`, 'error');
+        return;
+      }
+
+      const headers = { 'Content-Type': 'application/json' };
+      if (jwtToken) headers['Authorization'] = `Bearer ${jwtToken}`;
+
+      try {
+        log(`Creating booking for quote ${latestQuoteId}...`);
+        const res = await fetch(`${getBaseUrl()}/api/v1/bookings`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ quoteId: latestQuoteId })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          log(`Booking Confirmed! Booking ID: ${data.bookingId}, Status: ${data.status}`, 'success');
+        } else {
+          log(`Booking Failed (${res.status}): ${JSON.stringify(data)}`, 'error');
+        }
+      } catch (err) {
+        log(`Network Error: ${err.message}`, 'error');
+      }
+    });
+
+    // Security Test Infinity
+    document.getElementById('btnTestInf').addEventListener('click', async () => {
+      log(`[Security Test] Sending Infinity coordinate payload to test validation guard...`);
+      try {
+        const res = await fetch(`${getBaseUrl()}/api/v1/quotes`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pickupLat: 99999.0, pickupLon: -73.98, dropoffLat: 40.74, dropoffLon: -73.98 })
+        });
+        const data = await res.json();
+        log(`Server Response (${res.status}): ${JSON.stringify(data)}`, res.status === 400 ? 'success' : 'error');
+      } catch (err) {
+        log(`Network Error: ${err.message}`, 'error');
+      }
+    });
+
+    // Security Test IDOR
+    document.getElementById('btnTestIdor').addEventListener('click', async () => {
+      log(`[Security Test] Attempting IDOR fetch of unauthorized booking ID...`);
+      const fakeUuid = '00000000-0000-0000-0000-000000000000';
+      const headers = {};
+      if (jwtToken) headers['Authorization'] = `Bearer ${jwtToken}`;
+
+      try {
+        const res = await fetch(`${getBaseUrl()}/api/v1/bookings/${fakeUuid}`, { headers });
+        const data = await res.json();
+        log(`Server Response (${res.status}): ${JSON.stringify(data)}`, res.status === 403 || res.status === 404 ? 'success' : 'error');
+      } catch (err) {
+        log(`Network Error: ${err.message}`, 'error');
+      }
+    });
+  </script>
+</body>
+</html>
