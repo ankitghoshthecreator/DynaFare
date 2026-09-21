@@ -72,8 +72,15 @@ BASE_MINUTES_PER_KM = 3.5  # minutes per km baseline
 
 
 def _flat_rate(distance_km: float, demand_ratio: float) -> tuple[float, float]:
-    """Deterministic fallback price + ETA when the ML model is unavailable."""
-    price = round(BASE_RATE_PER_KM * distance_km * demand_ratio, 2)
+    """Deterministic fallback price + ETA when the ML model is unavailable.
+
+    Args:
+        distance_km: trip distance in kilometres (non-negative).
+        demand_ratio: current demand/supply ratio — clamped to [1.0, 5.0] for
+            safety (negative or zero surge is not physically meaningful).
+    """
+    safe_surge = max(1.0, min(demand_ratio, 5.0))  # clamp: surge in [1.0, 5.0]
+    price = round(BASE_RATE_PER_KM * distance_km * safe_surge, 2)
     eta = round(BASE_MINUTES_PER_KM * distance_km, 1)
     return max(price, 30.0), max(eta, 5.0)
 

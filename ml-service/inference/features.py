@@ -8,10 +8,33 @@ from datetime import datetime, timezone
 
 import pandas as pd
 
+# ─── Coordinate validation ────────────────────────────────────────────────────
+LAT_RANGE = (-90.0, 90.0)
+LON_RANGE = (-180.0, 180.0)
+
+
+def _validate_coords(lat: float, lon: float, label: str = "") -> None:
+    """Raise ValueError if coordinates are not finite or out of valid range."""
+    if not math.isfinite(lat) or not math.isfinite(lon):
+        raise ValueError(
+            f"Non-finite coordinate detected ({label}): lat={lat}, lon={lon}. "
+            "Ensure coordinates are valid WGS-84 decimal degrees."
+        )
+    if not (LAT_RANGE[0] <= lat <= LAT_RANGE[1]):
+        raise ValueError(f"Latitude {lat} out of range {LAT_RANGE} for {label}")
+    if not (LON_RANGE[0] <= lon <= LON_RANGE[1]):
+        raise ValueError(f"Longitude {lon} out of range {LON_RANGE} for {label}")
+
 # ─── Haversine distance ──────────────────────────────────────────────────────
 
 def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    """Return great-circle distance in kilometres between two lat/lon points."""
+    """Return great-circle distance in kilometres between two lat/lon points.
+
+    Raises:
+        ValueError: if any coordinate is non-finite or out of WGS-84 bounds.
+    """
+    _validate_coords(lat1, lon1, "pickup")
+    _validate_coords(lat2, lon2, "dropoff")
     R = 6371.0
     phi1, phi2 = math.radians(lat1), math.radians(lat2)
     dphi = math.radians(lat2 - lat1)

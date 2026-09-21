@@ -22,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import jakarta.validation.Valid;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -38,7 +39,7 @@ public class BookingController {
     private final UserRepository userRepository;
 
     @PostMapping("/quotes")
-    public ResponseEntity<QuoteResponse> getQuote(@RequestBody QuoteRequest request, Authentication authentication) {
+    public ResponseEntity<QuoteResponse> getQuote(@Valid @RequestBody QuoteRequest request, Authentication authentication) {
         User user = userRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
 
