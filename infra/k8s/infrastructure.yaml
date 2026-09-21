@@ -1,0 +1,153 @@
+# ─── StatefulSet: PostgreSQL ──────────────────────────────────────────────────
+# For production: use a managed database (AWS RDS, Cloud SQL) instead.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: dynafare-dev
+  labels:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/part-of: dynafare
+spec:
+  serviceName: "postgres-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: dynafare-secrets
+                  key: POSTGRES_DB
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: dynafare-secrets
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dynafare-secrets
+                  key: POSTGRES_PASSWORD
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "dynafare"]
+            initialDelaySeconds: 10
+            periodSeconds: 5
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+
+---
+# ─── Service: postgres (headless for StatefulSet DNS) ────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: dynafare-dev
+  labels:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/part-of: dynafare
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+  type: ClusterIP
+
+---
+# ─── StatefulSet: Redis ───────────────────────────────────────────────────────
+# For production: use a managed Redis (ElastiCache, Upstash) instead.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: dynafare-dev
+  labels:
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/part-of: dynafare
+spec:
+  serviceName: "redis-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          command: ["redis-server", "--appendonly", "yes"]
+          ports:
+            - containerPort: 6379
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          volumeMounts:
+            - name: redis-storage
+              mountPath: /data
+          readinessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 2Gi
+
+---
+# ─── Service: redis ───────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  namespace: dynafare-dev
+  labels:
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/part-of: dynafare
+spec:
+  selector:
+    app: redis
+  ports:
+    - port: 6379
+      targetPort: 6379
+  type: ClusterIP

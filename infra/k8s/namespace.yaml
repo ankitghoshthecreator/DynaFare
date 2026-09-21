@@ -1,0 +1,7 @@
+# Namespace per environment (use overlays for staging/prod)
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dynafare-dev
+  labels:
+    app.kubernetes.io/part-of: dynafare

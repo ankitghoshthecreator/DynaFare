@@ -1,0 +1,33 @@
+# ─── ConfigMap: api-service non-secret config ───────────────────────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-service-config
+  namespace: dynafare-dev
+  labels:
+    app.kubernetes.io/name: api-service
+    app.kubernetes.io/part-of: dynafare
+data:
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres-service:5432/dynafare"
+  SPRING_DATA_REDIS_HOST: "redis-service"
+  SPRING_DATA_REDIS_PORT: "6379"
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka-service:9092"
+  ML_SERVICE_URL: "http://ml-service:8000"
+  SERVER_PORT: "8080"
+
+---
+# ─── ConfigMap: ml-service non-secret config ────────────────────────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ml-service-config
+  namespace: dynafare-dev
+  labels:
+    app.kubernetes.io/name: ml-service
+    app.kubernetes.io/part-of: dynafare
+data:
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+  KAFKA_BOOTSTRAP_SERVERS: "kafka-service:9092"
+  MODEL_PATH: "model/price_model.json"
+  ETA_MODEL_PATH: "model/eta_model.json"

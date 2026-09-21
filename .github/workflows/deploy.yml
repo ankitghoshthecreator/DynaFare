@@ -48,6 +48,15 @@ jobs:
           cache-from: type=registry,ref=${{ env.IMAGE_PREFIX }}/ml-service:buildcache
           cache-to: type=registry,ref=${{ env.IMAGE_PREFIX }}/ml-service:buildcache,mode=max
 
+      - name: Build & push nginx
+        uses: docker/build-push-action@v6
+        with:
+          context: infra/nginx
+          push: true
+          tags: ${{ env.IMAGE_PREFIX }}/nginx:${{ github.sha }},${{ env.IMAGE_PREFIX }}/nginx:latest
+          cache-from: type=registry,ref=${{ env.IMAGE_PREFIX }}/nginx:buildcache
+          cache-to: type=registry,ref=${{ env.IMAGE_PREFIX }}/nginx:buildcache,mode=max
+
   # ─── Deploy to staging ───────────────────────────────────────────────────────
   deploy-staging:
     name: Deploy to Staging
@@ -58,9 +67,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+
       - name: Deploy to staging
-        run: echo "Deploy to staging — configure kubectl + kubeconfig secret here"
-        # TODO: kubectl apply -k infra/k8s/overlays/staging
+        env:
+          KUBECONFIG_DATA: ${{ secrets.KUBECONFIG_STAGING }}
+        run: |
+          echo "$KUBECONFIG_DATA" | base64 -d > /tmp/kubeconfig
+          export KUBECONFIG=/tmp/kubeconfig
+          kubectl apply -f infra/k8s/namespace.yaml
+          kubectl apply -f infra/k8s/secrets.yaml
+          kubectl apply -f infra/k8s/configmaps.yaml
+          kubectl apply -f infra/k8s/infrastructure.yaml
+          kubectl apply -f infra/k8s/kafka.yaml
+          kubectl apply -f infra/k8s/api-service.yaml
+          kubectl apply -f infra/k8s/ml-service.yaml
+          kubectl apply -f infra/k8s/nginx.yaml
+          kubectl set image deployment/api-service api-service=${{ env.IMAGE_PREFIX }}/api-service:${{ github.sha }} -n dynafare-dev
+          kubectl set image deployment/ml-service ml-service=${{ env.IMAGE_PREFIX }}/ml-service:${{ github.sha }} -n dynafare-dev
+          kubectl rollout status deployment/api-service -n dynafare-dev
+          kubectl rollout status deployment/ml-service -n dynafare-dev
 
   # ─── Manual gate + prod deploy ───────────────────────────────────────────────
   deploy-prod:
@@ -72,6 +99,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+
       - name: Deploy to production
-        run: echo "Deploy to production — configure kubectl + kubeconfig secret here"
-        # TODO: kubectl apply -k infra/k8s/overlays/prod
+        env:
+          KUBECONFIG_DATA: ${{ secrets.KUBECONFIG_PROD }}
+        run: |
+          echo "$KUBECONFIG_DATA" | base64 -d > /tmp/kubeconfig
+          export KUBECONFIG=/tmp/kubeconfig
+          kubectl apply -f infra/k8s/namespace.yaml
+          kubectl apply -f infra/k8s/secrets.yaml
+          kubectl apply -f infra/k8s/configmaps.yaml
+          kubectl apply -f infra/k8s/infrastructure.yaml
+          kubectl apply -f infra/k8s/kafka.yaml
+          kubectl apply -f infra/k8s/api-service.yaml
+          kubectl apply -f infra/k8s/ml-service.yaml
+          kubectl apply -f infra/k8s/nginx.yaml
+          kubectl set image deployment/api-service api-service=${{ env.IMAGE_PREFIX }}/api-service:${{ github.sha }} -n dynafare-dev
+          kubectl set image deployment/ml-service ml-service=${{ env.IMAGE_PREFIX }}/ml-service:${{ github.sha }} -n dynafare-dev
+          kubectl rollout status deployment/api-service -n dynafare-dev
+          kubectl rollout status deployment/ml-service -n dynafare-dev
